@@ -118,7 +118,7 @@
     }
   </style>
 
-  <!-- Firebase -->
+  <!-- Firebase Setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -133,60 +133,43 @@
       measurementId: "G-5PLQLQG8DR"
     };
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const app = initializeApp(firebaseConfig);
-      const db = getDatabase(app);
-      const commentBox = document.getElementById("comments");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app, "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app");
 
-      // Restore name from localStorage
-      const nameInput = document.getElementById("name");
-      nameInput.value = localStorage.getItem("savedName") || "";
+    window.submitComment = function() {
+      const name = document.getElementById("name").value.trim();
+      const comment = document.getElementById("comment").value.trim();
+      if (!name || !comment) return alert("Both fields required");
 
-      window.submitComment = function() {
-        const name = nameInput.value.trim();
-        const comment = document.getElementById("comment").value.trim();
-        if (!name || !comment) return alert("Both fields required");
-        if (comment.length > 500) return alert("Comment too long (max 500 chars)");
+      push(ref(db, "comments"), { name, comment, timestamp: Date.now() });
+      document.getElementById("name").value = "";
+      document.getElementById("comment").value = "";
+    };
 
-        localStorage.setItem("savedName", name);
+    window.deleteComment = function(key) {
+      remove(ref(db, "comments/" + key));
+    };
 
-        push(ref(db, "comments"), {
-          name,
-          comment,
-          timestamp: Date.now()
+    const commentBox = document.getElementById("comments");
+    onValue(ref(db, "comments"), (snapshot) => {
+      const data = snapshot.val();
+      commentBox.innerHTML = "";
+      if (data) {
+        Object.entries(data).forEach(([key, value]) => {
+          const entry = document.createElement("div");
+          entry.innerHTML = `
+            <p><strong>${value.name}</strong>: ${value.comment}</p>
+            <button onclick="deleteComment('${key}')">Delete</button>
+          `;
+          commentBox.appendChild(entry);
         });
-
-        document.getElementById("comment").value = "";
-      };
-
-      window.deleteComment = function(key) {
-        if (confirm("Delete this comment?")) {
-          remove(ref(db, "comments/" + key));
-        }
-      };
-
-      onValue(ref(db, "comments"), (snapshot) => {
-        const data = snapshot.val();
-        commentBox.innerHTML = "";
-        if (data) {
-          const commentsArray = Object.entries(data);
-          // Sort by newest first
-          commentsArray.sort((a, b) => b[1].timestamp - a[1].timestamp);
-          commentsArray.forEach(([key, value]) => {
-            const entry = document.createElement("div");
-            entry.innerHTML = `
-              <p><strong>${value.name}</strong>: ${value.comment}</p>
-              <button onclick="deleteComment('${key}')">Delete</button>
-            `;
-            commentBox.appendChild(entry);
-          });
-        }
-      });
+      }
     });
   </script>
 </head>
 
 <body>
+
   <header>
     <h1>Blackpink – How You Like That</h1>
   </header>
@@ -206,10 +189,11 @@
 
   <div id="comment-section">
     <input type="text" id="name" placeholder="Your name">
-    <textarea id="comment" placeholder="Your comment (max 500 chars)"></textarea>
+    <textarea id="comment" placeholder="Your comment"></textarea>
     <button onclick="submitComment()">Post Comment</button>
   </div>
 
   <div id="comments"></div>
+
 </body>
 </html>
