@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-7HR4EXZCMY"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7HR4EXZCMY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-7HR4EXZCMY');
+  </script>
 
-  gtag('config', 'G-7HR4EXZCMY');
-</script>
   <meta charset="UTF-8">
   <title>Blackpink – How You Like That</title>
   <style>
@@ -67,8 +67,103 @@
       margin-top: 50px;
       color: #cc0066;
     }
+
+    #comment-section {
+      max-width: 600px;
+      margin: 30px auto;
+      text-align: left;
+    }
+
+    #comment-section input,
+    #comment-section textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #comment-section button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #ff66b2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #comments div {
+      background: #fff0fa;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 6px #f4b8d3;
+    }
+
+    #comments p {
+      margin: 5px 0;
+    }
+
+    #comments button {
+      font-size: 12px;
+      padding: 4px 8px;
+      margin-top: 5px;
+      background-color: #cc0055;
+    }
   </style>
+
+  <!-- Firebase Setup -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
+      authDomain: "k-poop-comments.firebaseapp.com",
+      projectId: "k-poop-comments",
+      storageBucket: "k-poop-comments.firebasestorage.app",
+      messagingSenderId: "323112465515",
+      appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
+      measurementId: "G-5PLQLQG8DR"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.submitComment = function() {
+      const name = document.getElementById("name").value.trim();
+      const comment = document.getElementById("comment").value.trim();
+      if (!name || !comment) return alert("Both fields required");
+
+      push(ref(db, "comments"), { name, comment, timestamp: Date.now() });
+      document.getElementById("name").value = "";
+      document.getElementById("comment").value = "";
+    };
+
+    window.deleteComment = function(key) {
+      remove(ref(db, "comments/" + key));
+    };
+
+    const commentBox = document.getElementById("comments");
+    onValue(ref(db, "comments"), (snapshot) => {
+      const data = snapshot.val();
+      commentBox.innerHTML = "";
+      if (data) {
+        Object.entries(data).forEach(([key, value]) => {
+          const entry = document.createElement("div");
+          entry.innerHTML = `
+            <p><strong>${value.name}</strong>: ${value.comment}</p>
+            <button onclick="deleteComment('${key}')">Delete</button>
+          `;
+          commentBox.appendChild(entry);
+        });
+      }
+    });
+  </script>
 </head>
+
 <body>
 
   <header>
@@ -88,23 +183,13 @@
 
   <h2>💬 Leave your comments below!</h2>
 
-  <!-- 🗨️ Giscus Comment System -->
-  <div id="giscus"></div>
-  <script src="https://giscus.app/client.js"
-          data-repo="RG-365x/K-poop"
-          data-repo-id="R_kgDOPM7gng"
-          data-category="Comments"
-          data-category-id="DIC_kwDOPM7gns4CtKV4"
-          data-mapping="pathname"
-          data-strict="0"
-          data-reactions-enabled="1"
-          data-emit-metadata="0"
-          data-input-position="bottom"
-          data-theme="light"
-          data-lang="en"
-          crossorigin="anonymous"
-          async>
-  </script>
+  <div id="comment-section">
+    <input type="text" id="name" placeholder="Your name">
+    <textarea id="comment" placeholder="Your comment"></textarea>
+    <button onclick="submitComment()">Post Comment</button>
+  </div>
+
+  <div id="comments"></div>
 
 </body>
 </html>
