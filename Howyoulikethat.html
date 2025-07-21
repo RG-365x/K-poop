@@ -58,7 +58,7 @@
       font-size: 18px;
       font-style: italic;
       color: #99004d;
-      margin-bottom: 40px;
+      margin-bottom: 20px;
       max-width: 800px;
       margin-left: auto;
       margin-right: auto;
@@ -66,6 +66,25 @@
       padding: 15px;
       border-radius: 10px;
       box-shadow: 0 0 10px #f9b6d1;
+    }
+
+    #video-likes {
+      margin-top: 10px;
+    }
+
+    #video-likes p {
+      font-size: 18px;
+    }
+
+    #video-likes button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #cc0066;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 5px;
     }
 
     #comment-section {
@@ -121,7 +140,10 @@
   <!-- Firebase Setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import {
+      getDatabase, ref, push, onValue, remove,
+      get, set
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
@@ -136,6 +158,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app, "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app");
 
+    // COMMENT SYSTEM
     window.submitComment = function() {
       const name = document.getElementById("name").value.trim();
       const comment = document.getElementById("comment").value.trim();
@@ -170,6 +193,22 @@
         });
       }
     });
+
+    // VIDEO LIKE BUTTON
+    const videoLikesRef = ref(db, "videoLikes");
+    const likeDisplay = document.getElementById("video-like-count");
+
+    onValue(videoLikesRef, (snapshot) => {
+      const count = snapshot.val() || 0;
+      likeDisplay.textContent = count;
+    });
+
+    window.likeVideo = function () {
+      get(videoLikesRef).then((snapshot) => {
+        const current = snapshot.val() || 0;
+        set(videoLikesRef, current + 1);
+      });
+    };
   </script>
 </head>
 
@@ -179,7 +218,7 @@
     <h1>Blackpink – How You Like That</h1>
   </header>
 
-  <!-- New h2 before video -->
+  <!-- h2 before video -->
   <h2>💬 Scroll down to leave a comment after watching!</h2>
 
   <div class="video-container">
@@ -187,6 +226,12 @@
       <source src="howyoulikethat.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
+  </div>
+
+  <!-- Like Button for Video -->
+  <div id="video-likes">
+    <p>❤️ Video Likes: <span id="video-like-count">0</span></p>
+    <button onclick="likeVideo()">👍 Like this video</button>
   </div>
 
   <div class="subcaption">
