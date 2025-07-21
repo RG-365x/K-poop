@@ -58,7 +58,7 @@
       font-size: 18px;
       font-style: italic;
       color: #99004d;
-      margin-bottom: 20px;
+      margin-bottom: 40px;
       max-width: 800px;
       margin-left: auto;
       margin-right: auto;
@@ -66,25 +66,6 @@
       padding: 15px;
       border-radius: 10px;
       box-shadow: 0 0 10px #f9b6d1;
-    }
-
-    #video-likes {
-      margin-top: 10px;
-    }
-
-    #video-likes p {
-      font-size: 18px;
-    }
-
-    #video-likes button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #cc0066;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      margin-top: 5px;
     }
 
     #comment-section {
@@ -135,15 +116,28 @@
       border-radius: 4px;
       cursor: pointer;
     }
+
+    .like-container {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #like-btn {
+      background-color: #ff3399;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
   </style>
 
   <!-- Firebase Setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import {
-      getDatabase, ref, push, onValue, remove,
-      get, set
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
@@ -158,7 +152,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app, "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app");
 
-    // COMMENT SYSTEM
+    // Comment Submission
     window.submitComment = function() {
       const name = document.getElementById("name").value.trim();
       const comment = document.getElementById("comment").value.trim();
@@ -178,6 +172,7 @@
       }
     };
 
+    // Comment Display
     const commentBox = document.getElementById("comments");
     onValue(ref(db, "comments"), (snapshot) => {
       const data = snapshot.val();
@@ -194,21 +189,23 @@
       }
     });
 
-    // VIDEO LIKE BUTTON
-    const videoLikesRef = ref(db, "videoLikes");
-    const likeDisplay = document.getElementById("video-like-count");
+    // Like Button Logic
+    const likeBtn = document.getElementById("like-btn");
+    const likeCountText = document.getElementById("like-count");
 
-    onValue(videoLikesRef, (snapshot) => {
+    const likeRef = ref(db, "likes/count");
+
+    // Update like count on load and live
+    onValue(likeRef, (snapshot) => {
       const count = snapshot.val() || 0;
-      likeDisplay.textContent = count;
+      likeCountText.textContent = `👍 Likes: ${count}`;
     });
 
-    window.likeVideo = function () {
-      get(videoLikesRef).then((snapshot) => {
-        const current = snapshot.val() || 0;
-        set(videoLikesRef, current + 1);
-      });
-    };
+    likeBtn.addEventListener("click", async () => {
+      const snap = await get(likeRef);
+      const current = snap.exists() ? snap.val() : 0;
+      set(likeRef, current + 1);
+    });
   </script>
 </head>
 
@@ -218,7 +215,6 @@
     <h1>Blackpink – How You Like That</h1>
   </header>
 
-  <!-- h2 before video -->
   <h2>💬 Scroll down to leave a comment after watching!</h2>
 
   <div class="video-container">
@@ -228,10 +224,9 @@
     </video>
   </div>
 
-  <!-- Like Button for Video -->
-  <div id="video-likes">
-    <p>❤️ Video Likes: <span id="video-like-count">0</span></p>
-    <button onclick="likeVideo()">👍 Like this video</button>
+  <div class="like-container">
+    <button id="like-btn">❤️ Like this video</button>
+    <div id="like-count">👍 Likes: 0</div>
   </div>
 
   <div class="subcaption">
