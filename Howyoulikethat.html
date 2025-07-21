@@ -147,7 +147,12 @@
     };
 
     window.deleteComment = function(key) {
-      remove(ref(db, "comments/" + key));
+      const entered = prompt("Enter the admin password to delete this comment:");
+      if (entered === "kpoopforever") {
+        remove(ref(db, "comments/" + key));
+      } else {
+        alert("Incorrect password. Cannot delete.");
+      }
     };
 
     const commentBox = document.getElementById("comments");
