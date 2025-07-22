@@ -168,33 +168,35 @@
       else alert("Incorrect password.");
     };
 
-    const commentBox = document.getElementById("comments");
-    onValue(ref(db, "comments"), (snapshot) => {
-      const data = snapshot.val();
-      commentBox.innerHTML = "";
-      if (data) {
-        Object.entries(data).forEach(([key, value]) => {
-          const entry = document.createElement("div");
-          entry.innerHTML = `<p><strong>${value.name}</strong>: ${value.comment}</p><button onclick="deleteComment('${key}')">Delete</button>`;
-          commentBox.appendChild(entry);
-        });
-      }
-    });
+    window.addEventListener("load", () => {
+      const commentBox = document.getElementById("comments");
+      onValue(ref(db, "comments"), (snapshot) => {
+        const data = snapshot.val();
+        commentBox.innerHTML = "";
+        if (data) {
+          Object.entries(data).forEach(([key, value]) => {
+            const entry = document.createElement("div");
+            entry.innerHTML = `<p><strong>${value.name}</strong>: ${value.comment}</p><button onclick="deleteComment('${key}')">Delete</button>`;
+            commentBox.appendChild(entry);
+          });
+        }
+      });
 
-    // Like Button Logic
-    const likeBtn = document.getElementById("like-btn");
-    const likeCountText = document.getElementById("like-count");
-    const likeRef = ref(db, "likes/count");
+      // Like Button Logic
+      const likeBtn = document.getElementById("like-btn");
+      const likeCountText = document.getElementById("like-count");
+      const likeRef = ref(db, "likes/count");
 
-    onValue(likeRef, (snapshot) => {
-      const count = snapshot.val() || 0;
-      likeCountText.textContent = `👍 Likes: ${count}`;
-    });
+      onValue(likeRef, (snapshot) => {
+        const count = snapshot.val() || 0;
+        likeCountText.textContent = `👍 Likes: ${count}`;
+      });
 
-    likeBtn.addEventListener("click", async () => {
-      const snap = await get(likeRef);
-      const current = snap.exists() ? snap.val() : 0;
-      await set(likeRef, current + 1);
+      likeBtn.addEventListener("click", async () => {
+        const snap = await get(likeRef);
+        const current = snap.exists() ? snap.val() : 0;
+        await set(likeRef, current + 1);
+      });
     });
   </script>
 </head>
