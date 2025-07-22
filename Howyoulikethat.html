@@ -130,7 +130,7 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
   </style>
 
@@ -157,7 +157,6 @@
       const name = document.getElementById("name").value.trim();
       const comment = document.getElementById("comment").value.trim();
       if (!name || !comment) return alert("Both fields required");
-
       push(ref(db, "comments"), { name, comment, timestamp: Date.now() });
       document.getElementById("name").value = "";
       document.getElementById("comment").value = "";
@@ -165,14 +164,10 @@
 
     window.deleteComment = function(key) {
       const pw = prompt("Enter password to delete:");
-      if (pw === "kpoopforever") {
-        remove(ref(db, "comments/" + key));
-      } else {
-        alert("Incorrect password.");
-      }
+      if (pw === "kpoopforever") remove(ref(db, "comments/" + key));
+      else alert("Incorrect password.");
     };
 
-    // Comment Display
     const commentBox = document.getElementById("comments");
     onValue(ref(db, "comments"), (snapshot) => {
       const data = snapshot.val();
@@ -180,10 +175,7 @@
       if (data) {
         Object.entries(data).forEach(([key, value]) => {
           const entry = document.createElement("div");
-          entry.innerHTML = `
-            <p><strong>${value.name}</strong>: ${value.comment}</p>
-            <button onclick="deleteComment('${key}')">Delete</button>
-          `;
+          entry.innerHTML = `<p><strong>${value.name}</strong>: ${value.comment}</p><button onclick="deleteComment('${key}')">Delete</button>`;
           commentBox.appendChild(entry);
         });
       }
@@ -194,30 +186,19 @@
     const likeCountText = document.getElementById("like-count");
     const likeRef = ref(db, "likes/count");
 
-    // Live update
     onValue(likeRef, (snapshot) => {
       const count = snapshot.val() || 0;
       likeCountText.textContent = `👍 Likes: ${count}`;
-      console.log("Updated like count from Firebase:", count);
     });
 
     likeBtn.addEventListener("click", async () => {
-      console.log("Like button clicked");
-      try {
-        const snap = await get(likeRef);
-        const current = snap.exists() ? snap.val() : 0;
-        console.log("Current like count:", current);
-        await set(likeRef, current + 1);
-        console.log("Like count updated to:", current + 1);
-      } catch (err) {
-        console.error("Error updating likes:", err);
-      }
+      const snap = await get(likeRef);
+      const current = snap.exists() ? snap.val() : 0;
+      await set(likeRef, current + 1);
     });
   </script>
 </head>
-
 <body>
-
   <header>
     <h1>Blackpink – How You Like That</h1>
   </header>
@@ -249,6 +230,5 @@
   </div>
 
   <div id="comments"></div>
-
 </body>
 </html>
