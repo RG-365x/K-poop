@@ -137,7 +137,7 @@
   <!-- Firebase Setup -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue, remove, get, set, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
@@ -168,7 +168,17 @@
       else alert("Incorrect password.");
     };
 
-    window.addEventListener("load", () => {
+    async function getUserIP() {
+      try {
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
+        return data.ip;
+      } catch {
+        return null;
+      }
+    }
+
+    window.addEventListener("load", async () => {
       const commentBox = document.getElementById("comments");
       onValue(ref(db, "comments"), (snapshot) => {
         const data = snapshot.val();
@@ -182,10 +192,10 @@
         }
       });
 
-      // Like Button Logic
       const likeBtn = document.getElementById("like-btn");
       const likeCountText = document.getElementById("like-count");
       const likeRef = ref(db, "likes/count");
+      const ipLikesRef = ref(db, "likes/ips");
 
       onValue(likeRef, (snapshot) => {
         const count = snapshot.val() || 0;
@@ -193,9 +203,17 @@
       });
 
       likeBtn.addEventListener("click", async () => {
-        const snap = await get(likeRef);
-        const current = snap.exists() ? snap.val() : 0;
+        const ip = await getUserIP();
+        if (!ip) return alert("Couldn't verify user IP");
+
+        const ipSnap = await get(child(ref(db), `likes/ips/${ip}`));
+        if (ipSnap.exists()) return alert("You've already liked this!");
+
+        const countSnap = await get(likeRef);
+        const current = countSnap.exists() ? countSnap.val() : 0;
         await set(likeRef, current + 1);
+        await set(ref(db, `likes/ips/${ip}`), true);
+        gtag('event', 'like_added');
       });
     });
   </script>
