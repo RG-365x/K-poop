@@ -143,7 +143,7 @@
       apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
       authDomain: "k-poop-comments.firebaseapp.com",
       projectId: "k-poop-comments",
-      storageBucket: "k-poop-comments.firebasestorage.app",
+      storageBucket: "k-poop-comments.appspot.com",
       messagingSenderId: "323112465515",
       appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
       measurementId: "G-5PLQLQG8DR"
@@ -192,19 +192,26 @@
     // Like Button Logic
     const likeBtn = document.getElementById("like-btn");
     const likeCountText = document.getElementById("like-count");
-
     const likeRef = ref(db, "likes/count");
 
-    // Update like count on load and live
+    // Live update
     onValue(likeRef, (snapshot) => {
       const count = snapshot.val() || 0;
       likeCountText.textContent = `👍 Likes: ${count}`;
+      console.log("Updated like count from Firebase:", count);
     });
 
     likeBtn.addEventListener("click", async () => {
-      const snap = await get(likeRef);
-      const current = snap.exists() ? snap.val() : 0;
-      set(likeRef, current + 1);
+      console.log("Like button clicked");
+      try {
+        const snap = await get(likeRef);
+        const current = snap.exists() ? snap.val() : 0;
+        console.log("Current like count:", current);
+        await set(likeRef, current + 1);
+        console.log("Like count updated to:", current + 1);
+      } catch (err) {
+        console.error("Error updating likes:", err);
+      }
     });
   </script>
 </head>
