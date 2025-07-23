@@ -137,65 +137,93 @@
   </style>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, onValue, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getDatabase,
+    ref,
+    onValue,
+    get,
+    set,
+    push,
+    serverTimestamp,
+    increment
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-    const firebaseConfig = {
-      databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app/"
-    };
+  const firebaseConfig = {
+    databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app/"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    const likeBtn = document.getElementById("like-btn");
-    const likeCount = document.getElementById("like-count");
+  // LIKE SYSTEM --------------------
+  const likeBtn = document.getElementById("like-btn");
+  const likeCount = document.getElementById("like-count");
+  const likeRef = ref(db, "likes/count");
 
-    const likeRef = ref(db, "likes/count");
-    onValue(likeRef, (snapshot) => {
-      likeCount.textContent = `👍 Likes: ${snapshot.val() || 0}`;
-    });
+  // Update like count live
+  onValue(likeRef, (snapshot) => {
+    const count = snapshot.val() || 0;
+    likeCount.textContent = `👍 Likes: ${count}`;
+  });
 
-    likeBtn.addEventListener("click", async () => {
-      const snapshot = await onValue(likeRef, () => {});
-      set(likeRef, (snapshot.val() || 0) + 1);
-    });
+  // If already liked, disable button
+  if (localStorage.getItem("liked") === "true") {
+    likeBtn.textContent = "❤️ Liked";
+    likeBtn.disabled = true;
+  }
 
-    const commentForm = document.getElementById("comment-form");
-    const commentsDiv = document.getElementById("comments");
+  likeBtn.addEventListener("click", async () => {
+    if (localStorage.getItem("liked") === "true") return;
 
-    const commentsRef = ref(db, "comments");
-    onValue(commentsRef, (snapshot) => {
-      commentsDiv.innerHTML = "";
-      const comments = snapshot.val();
-      for (let id in comments) {
-        const { name, comment, timestamp } = comments[id];
-        const date = timestamp ? new Date(timestamp).toLocaleString() : "Unknown time";
+    try {
+      await set(likeRef, increment(1)); // Add 1 atomically
+      localStorage.setItem("liked", "true");
+      likeBtn.textContent = "❤️ Liked";
+      likeBtn.disabled = true;
+    } catch (error) {
+      console.error("Like error:", error);
+    }
+  });
 
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <p><strong>${name}</strong> <span class="timestamp">(${date})</span></p>
-          <p>${comment}</p>
-        `;
-        commentsDiv.prepend(div);
-      }
-    });
+  // COMMENTS SYSTEM ----------------
+  const commentForm = document.getElementById("comment-form");
+  const commentsDiv = document.getElementById("comments");
+  const commentsRef = ref(db, "comments");
 
-    commentForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const name = document.getElementById("name").value.trim();
-      const comment = document.getElementById("comment").value.trim();
+  onValue(commentsRef, (snapshot) => {
+    commentsDiv.innerHTML = "";
+    const comments = snapshot.val();
+    for (let id in comments) {
+      const { name, comment, timestamp } = comments[id];
+      const date = timestamp ? new Date(timestamp).toLocaleString() : "Unknown time";
 
-      if (name && comment) {
-        push(commentsRef, {
-          name,
-          comment,
-          timestamp: serverTimestamp()
-        });
+      const div = document.createElement("div");
+      div.innerHTML = `
+        <p><strong>${name}</strong> <span class="timestamp">(${date})</span></p>
+        <p>${comment}</p>
+      `;
+      commentsDiv.prepend(div);
+    }
+  });
 
-        commentForm.reset();
-      }
-    });
-  </script>
+  commentForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("name").value.trim();
+    const comment = document.getElementById("comment").value.trim();
+
+    if (name && comment) {
+      push(commentsRef, {
+        name,
+        comment,
+        timestamp: Date.now()
+      });
+
+      commentForm.reset();
+    }
+  });
+</script>
+
 </head>
 
 <body>
