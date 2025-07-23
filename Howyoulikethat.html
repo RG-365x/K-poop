@@ -1,113 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Blackpink – How You Like That</title>
+  <meta charset="UTF-8">
+  <title>How You Like That 💖</title>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
     body {
-      margin: 0;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #1e1e1e;
-      color: white;
-      padding: 20px;
+      background-color: #fff0f5;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
+    header {
+      background-color: #ff99cc;
+      padding: 30px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       text-align: center;
     }
-    header h1 {
-      background-color: #333;
-      padding: 20px;
+    h1 {
+      font-size: 42px;
       margin: 0;
-      color: #fff;
-      border-radius: 10px;
-    }
-    h2 {
-      color: #ccc;
-      margin-top: 30px;
+      text-shadow: 1px 1px #ffccdd;
     }
     .video-container {
-      margin: 30px auto;
-      max-width: 720px;
-      border: 4px solid #444;
-      border-radius: 10px;
+      max-width: 90%;
+      margin: 20px auto;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #ffb6c1;
       overflow: hidden;
     }
     video {
       width: 100%;
       height: auto;
       display: block;
-    }
-    .like-container {
-      margin: 20px auto;
-    }
-    #like-btn {
-      background-color: #ff2e63;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 16px;
-      transition: 0.2s;
-    }
-    #like-btn:hover {
-      background-color: #e02659;
-    }
-    #like-count {
-      margin-top: 10px;
-      font-size: 18px;
-    }
-    .comment-container {
-      max-width: 600px;
-      margin: 40px auto;
-      background-color: #2e2e2e;
-      padding: 20px;
-      border-radius: 12px;
-    }
-    .comment {
-      background-color: #3c3c3c;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 10px;
-      text-align: left;
-    }
-    .comment strong {
-      color: #ffbd69;
-    }
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      margin: 10px 0;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    button.post {
-      background-color: #08d9d6;
-      color: black;
-      font-weight: bold;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 20px;
-      cursor: pointer;
-      margin-top: 10px;
-    }
-    button.post:hover {
-      background-color: #06b6b3;
+      border-radius: 15px;
     }
     .subcaption {
-      margin-top: 20px;
-      color: #aaa;
+      font-size: 18px;
       font-style: italic;
+      color: #99004d;
+      background-color: #fff0f5;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #f9b6d1;
+      max-width: 800px;
+      margin: 0 auto 40px auto;
+      text-align: center;
+    }
+    #comment-section {
+      max-width: 600px;
+      margin: 30px auto;
+    }
+    #comment-section input,
+    #comment-section textarea {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      font-size: 16px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    #comment-section button {
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #ff66b2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    #comments div {
+      background: #fff0fa;
+      padding: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 6px #f4b8d3;
+      border-radius: 5px;
+    }
+    #comments p {
+      margin: 5px 0;
+    }
+    .like-container {
+      text-align: center;
+      margin-top: 20px;
+    }
+    #like-btn {
+      background-color: #ff3399;
+      color: white;
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-bottom: 10px;
     }
   </style>
 </head>
-
 <body>
   <header>
-    <h1>Blackpink – How You Like That</h1>
+    <h1>BLACKPINK – How You Like That</h1>
   </header>
-
-  <h2>💬 Scroll down to leave a comment after watching!</h2>
 
   <div class="video-container">
     <video controls>
@@ -116,88 +109,60 @@
     </video>
   </div>
 
+  <div class="subcaption">
+    The iconic track from BLACKPINK – leave your thoughts and drop a like!
+  </div>
+
   <div class="like-container">
-    <button id="like-btn">❤️ Like this video</button>
-    <div id="like-count">👍 Likes: 0</div>
+    <button id="like-btn">❤️ Like</button>
+    <p id="like-count">Likes: 0</p>
   </div>
 
-  <div class="subcaption">That's just the beginning. Just wait for the rest.</div>
-
-  <div class="comment-container">
+  <div id="comment-section">
     <h2>Leave a Comment</h2>
-    <div id="comments"></div>
-    <input type="text" id="name" placeholder="Your name" />
+    <input type="text" id="name" placeholder="Your name">
     <textarea id="comment" placeholder="Your comment"></textarea>
-    <button class="post" onclick="postComment()">Post Comment</button>
+    <button onclick="postComment()">Post Comment</button>
+    <div id="comments"></div>
   </div>
 
-  <!-- Firebase & Script -->
-  <script type="module">
-    // Import Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, push, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
+  <script>
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "YOUR-API-KEY",
+      authDomain: "YOUR.firebaseapp.com",
+      databaseURL: "https://YOUR.firebaseio.com",
+      projectId: "YOUR",
+      storageBucket: "YOUR.appspot.com",
+      messagingSenderId: "YOUR",
+      appId: "YOUR"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // Load Comments
-    const commentsRef = ref(db, 'comments');
-    onValue(commentsRef, (snapshot) => {
-      const commentsDiv = document.getElementById('comments');
-      commentsDiv.innerHTML = '';
-      snapshot.forEach(child => {
-        const data = child.val();
-        const div = document.createElement('div');
-        div.className = 'comment';
-        div.innerHTML = `<strong>${data.name}</strong><br>${data.comment}`;
-        commentsDiv.appendChild(div);
-      });
-    });
-
-    // Post a Comment
-    window.postComment = async function () {
-      const name = document.getElementById('name').value.trim();
-      const comment = document.getElementById('comment').value.trim();
-      if (!name || !comment) return alert("Please fill out both fields.");
-      await push(ref(db, 'comments'), { name, comment });
-      document.getElementById('name').value = '';
-      document.getElementById('comment').value = '';
+    function postComment() {
+      const name = document.getElementById("name").value.trim();
+      const comment = document.getElementById("comment").value.trim();
+      if (name && comment) {
+        db.ref("comments").push({ name, comment });
+        document.getElementById("name").value = "";
+        document.getElementById("comment").value = "";
+      }
     }
 
-    // Like Button Logic
-    const likeRef = ref(db, 'likes/count');
-    const ipRef = ref(db, 'likes/ips');
-    async function getIP() {
-      const res = await fetch("https://api.ipify.org?format=json");
-      const data = await res.json();
-      return data.ip;
-    }
-
-    document.getElementById('like-btn').addEventListener('click', async () => {
-      const ip = await getIP();
-      const ipCheckRef = ref(db, `likes/ips/${ip}`);
-      const snapshot = await get(ipCheckRef);
-      if (snapshot.exists()) return alert("You've already liked this.");
-      const countSnap = await get(likeRef);
-      const current = countSnap.exists() ? countSnap.val() : 0;
-      await set(likeRef, current + 1);
-      await set(ref(db, `likes/ips/${ip}`), true);
+    db.ref("comments").on("child_added", snapshot => {
+      const data = snapshot.val();
+      const div = document.createElement("div");
+      div.innerHTML = `<p><strong>${data.name}:</strong> ${data.comment}</p>`;
+      document.getElementById("comments").prepend(div);
     });
 
-    // Load Like Count
-    onValue(likeRef, (snap) => {
-      const count = snap.exists() ? snap.val() : 0;
-      document.getElementById('like-count').innerText = `👍 Likes: ${count}`;
+    const likeRef = db.ref("likes");
+    document.getElementById("like-btn").onclick = () => {
+      likeRef.transaction(count => (count || 0) + 1);
+    };
+    likeRef.on("value", snap => {
+      document.getElementById("like-count").innerText = `Likes: ${snap.val() || 0}`;
     });
   </script>
 </body>
