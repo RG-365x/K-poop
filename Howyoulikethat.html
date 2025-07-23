@@ -3,35 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>K-Poop Comments</title>
+  <title>🖋Which AI for literature?</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-      background-color: #f4f4f4;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f1f1f1;
+      margin: 0;
+      padding: 20px;
     }
+
     h1 {
-      background-color: #333;
+      background-color: #2c2c2c;
       color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
+      padding: 15px;
+      border-radius: 10px;
     }
+
     input, textarea {
-      padding: 8px;
-      margin: 5px 0;
       width: 100%;
+      padding: 10px;
+      margin: 8px 0;
       box-sizing: border-box;
+      font-size: 16px;
     }
+
     button {
-      padding: 8px 16px;
-      margin-top: 10px;
+      padding: 10px 20px;
+      margin-top: 5px;
+      font-size: 16px;
       cursor: pointer;
     }
-    #comments > div {
-      background: white;
-      padding: 10px;
+
+    .comment {
+      background-color: white;
+      border-left: 4px solid #2c2c2c;
       margin-top: 10px;
+      padding: 10px;
       border-radius: 5px;
+    }
+
+    .meta {
+      font-size: 14px;
+      color: gray;
     }
   </style>
 </head>
@@ -39,114 +52,54 @@
 
   <h1>💬 K-Poop Comments</h1>
 
-  <input id="name" type="text" placeholder="Your name" />
-  <textarea id="comment" placeholder="Your comment..."></textarea>
-  <br />
-  <button onclick="submitComment()">Post Comment</button>
+  <input type="text" id="name" placeholder="Your name"/>
+  <textarea id="comment" placeholder="Your comment..." rows="3"></textarea>
+  <button onclick="postComment()">Post Comment</button>
 
-  <p id="like-count">👍 Likes: 0</p>
-  <button id="like-btn">Like</button>
+  <div id="commentsContainer"></div>
 
-  <hr />
-  <div id="comments"></div>
-
+  <!-- Firebase -->
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
       authDomain: "k-poop-comments.firebaseapp.com",
+      databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "k-poop-comments",
       storageBucket: "k-poop-comments.appspot.com",
       messagingSenderId: "323112465515",
-      appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
-      measurementId: "G-5PLQLQG8DR",
-      databaseURL: "https://k-poop-comments-default-rtdb.firebaseio.com/"
+      appId: "1:323112465515:web:199f7b435cf59389a2ed2e"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    const commentsRef = ref(db, "comments");
 
-    // Submit Comment
-    window.submitComment = () => {
+    // Add comment to database
+    window.postComment = function () {
       const name = document.getElementById("name").value.trim();
       const comment = document.getElementById("comment").value.trim();
-
-      if (!name || !comment) {
-        alert("Please enter both name and comment.");
-        return;
-      }
-
-      const commentObj = {
-        name,
-        comment,
-        deletePassword: "kpoopforever"
-      };
-
-      push(ref(db, "comments"), commentObj);
-      document.getElementById("name").value = "";
-      document.getElementById("comment").value = "";
-    };
-
-    // Display Comments
-    const commentsRef = ref(db, "comments");
-    const commentsDiv = document.getElementById("comments");
-
-    onValue(commentsRef, (snapshot) => {
-      commentsDiv.innerHTML = "";
-      if (!snapshot.exists()) {
-        commentsDiv.innerHTML = "<p>No comments yet.</p>";
-        return;
-      }
-
-      snapshot.forEach((child) => {
-        const data = child.val();
-        const id = child.key;
-        const commentHTML = `
-          <div>
-            <p><strong>${data.name}</strong>: ${data.comment}</p>
-            <button onclick="deleteComment('${id}')">🗑 Delete</button>
-          </div>
-        `;
-        commentsDiv.innerHTML += commentHTML;
-      });
-    });
-
-    // Delete Comment
-    window.deleteComment = async (commentId) => {
-      const password = prompt("Enter delete password:");
-      const commentRef = ref(db, "comments/" + commentId);
-      const snapshot = await get(commentRef);
-      if (snapshot.exists()) {
-        const storedPassword = snapshot.val().deletePassword;
-        if (password === storedPassword) {
-          await remove(commentRef);
-          alert("Comment deleted.");
-        } else {
-          alert("Incorrect password.");
-        }
+      if (name && comment) {
+        push(commentsRef, {
+          name: name,
+          comment: comment,
+          timestamp: Date.now()
+        });
+        document.getElementById("name").value = "";
+        document.getElementById("comment").value = "";
       }
     };
 
-    // Like Button
-    const likeBtn = document.getElementById("like-btn");
-    const likeCountText = document.getElementById("like-count");
-    const likeRef = ref(db, "likes/count");
-
-    onValue(likeRef, (snapshot) => {
-      const count = snapshot.val() || 0;
-      likeCountText.textContent = `👍 Likes: ${count}`;
-    });
-
-    likeBtn.addEventListener("click", async () => {
-      try {
-        const snap = await get(likeRef);
-        const current = snap.exists() ? snap.val() : 0;
-        await set(likeRef, current + 1);
-      } catch (err) {
-        console.error("Error updating likes:", err);
-      }
+    // Load comments in real-time
+    const commentsContainer = document.getElementById("commentsContainer");
+    onChildAdded(commentsRef, (data) => {
+      const c = data.val();
+      const div = document.createElement("div");
+      div.className = "comment";
+      div.innerHTML = `<strong>${c.name}</strong><br>${c.comment}<br><div class="meta">${new Date(c.timestamp).toLocaleString()}</div>`;
+      commentsContainer.appendChild(div);
     });
   </script>
 
