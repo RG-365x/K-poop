@@ -1,273 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7HR4EXZCMY"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-7HR4EXZCMY');
-  </script>
-
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Blackpink – How You Like That</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>K-Poop Comments</title>
   <style>
     body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #ffe6f0;
-      color: #660033;
-      text-align: center;
+      font-family: Arial, sans-serif;
+      margin: 30px;
+      background-color: #f4f4f4;
     }
-
-    header {
-      background-color: #ff99cc;
-      padding: 30px 0;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
     h1 {
-      font-size: 42px;
-      margin: 0;
-      text-shadow: 1px 1px #ffccdd;
-    }
-
-    h2 {
-      margin-top: 30px;
-      color: #cc0066;
-    }
-
-    .video-container {
-      max-width: 90%;
-      margin: 20px auto;
-      border-radius: 15px;
-      box-shadow: 0 0 20px #ffb6c1;
-      overflow: hidden;
-    }
-
-    video {
-      width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 15px;
-    }
-
-    .subcaption {
-      font-size: 18px;
-      font-style: italic;
-      color: #99004d;
-      margin-bottom: 40px;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-      background-color: #fff0f5;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #f9b6d1;
-    }
-
-    #comment-section {
-      max-width: 600px;
-      margin: 30px auto;
-      text-align: left;
-    }
-
-    #comment-section input,
-    #comment-section textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    #comment-section button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #ff66b2;
+      background-color: #333;
       color: white;
-      border: none;
+      padding: 10px 20px;
       border-radius: 5px;
-      cursor: pointer;
     }
-
-    #comments div {
-      background: #fff0fa;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      box-shadow: 0 0 6px #f4b8d3;
-    }
-
-    #comments p {
+    input, textarea {
+      padding: 8px;
       margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
     }
-
-    #comments button {
-      font-size: 12px;
-      padding: 4px 8px;
-      margin-top: 5px;
-      background-color: #cc0055;
-      color: white;
-      border: none;
-      border-radius: 4px;
+    button {
+      padding: 8px 16px;
+      margin-top: 10px;
       cursor: pointer;
     }
-
-    .like-container {
-      margin-top: 20px;
-      font-size: 18px;
-    }
-
-    #like-btn {
-      background-color: #ff3399;
-      color: white;
-      padding: 10px 20px;
-      font-size: 16px;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      margin-bottom: 20px;
+    #comments > div {
+      background: white;
+      padding: 10px;
+      margin-top: 10px;
+      border-radius: 5px;
     }
   </style>
+</head>
+<body>
 
-  <!-- Firebase Setup -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <h1>💬 K-Poop Comments</h1>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
-    authDomain: "k-poop-comments.firebaseapp.com",
-    projectId: "k-poop-comments",
-    storageBucket: "k-poop-comments.appspot.com",
-    messagingSenderId: "323112465515",
-    appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
-    measurementId: "G-5PLQLQG8DR",
-    databaseURL: "https://k-poop-comments-default-rtdb.firebaseio.com/"
-  };
+  <input id="name" type="text" placeholder="Your name" />
+  <textarea id="comment" placeholder="Your comment..."></textarea>
+  <br />
+  <button onclick="submitComment()">Post Comment</button>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  <p id="like-count">👍 Likes: 0</p>
+  <button id="like-btn">Like</button>
 
-  // Submit Comment
-  window.submitComment = () => {
-    const name = document.getElementById("name").value.trim();
-    const comment = document.getElementById("comment").value.trim();
+  <hr />
+  <div id="comments"></div>
 
-    if (!name || !comment) {
-      alert("Please enter both name and comment.");
-      return;
-    }
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    const commentObj = {
-      name,
-      comment,
-      deletePassword: "kpoopforever", // Optional, no longer required to view
-      timestamp: Date.now()
+    const firebaseConfig = {
+      apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
+      authDomain: "k-poop-comments.firebaseapp.com",
+      projectId: "k-poop-comments",
+      storageBucket: "k-poop-comments.appspot.com",
+      messagingSenderId: "323112465515",
+      appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
+      measurementId: "G-5PLQLQG8DR",
+      databaseURL: "https://k-poop-comments-default-rtdb.firebaseio.com/"
     };
 
-    push(ref(db, "comments"), commentObj);
-    document.getElementById("name").value = "";
-    document.getElementById("comment").value = "";
-  };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  // Display Comments
-  const commentsRef = ref(db, "comments");
-  const commentsDiv = document.getElementById("comments");
+    // Submit Comment
+    window.submitComment = () => {
+      const name = document.getElementById("name").value.trim();
+      const comment = document.getElementById("comment").value.trim();
 
-  onValue(commentsRef, (snapshot) => {
-    commentsDiv.innerHTML = "";
-    snapshot.forEach((child) => {
-      const data = child.val() || {};
-      const id = child.key;
-      const name = data.name || "Anonymous";
-      const comment = data.comment || "";
-
-      const commentHTML = `
-        <div>
-          <p><strong>${name}</strong>: ${comment}</p>
-          <button onclick="deleteComment('${id}')">🗑 Delete</button>
-        </div>
-      `;
-      commentsDiv.innerHTML += commentHTML;
-    });
-  });
-
-  // Delete Comment
-  window.deleteComment = async (commentId) => {
-    const password = prompt("Enter delete password:");
-    const commentRef = ref(db, "comments/" + commentId);
-    const snapshot = await get(commentRef);
-    if (snapshot.exists()) {
-      const storedPassword = snapshot.val().deletePassword || "";
-      if (password === storedPassword) {
-        await remove(commentRef);
-        alert("Comment deleted.");
-      } else {
-        alert("Incorrect password.");
+      if (!name || !comment) {
+        alert("Please enter both name and comment.");
+        return;
       }
-    }
-  };
 
-  // Like Button
-  const likeBtn = document.getElementById("like-btn");
-  const likeCountText = document.getElementById("like-count");
-  const likeRef = ref(db, "likes/count");
+      const commentObj = {
+        name,
+        comment,
+        deletePassword: "kpoopforever"
+      };
 
-  onValue(likeRef, (snapshot) => {
-    const count = snapshot.val() || 0;
-    likeCountText.textContent = `👍 Likes: ${count}`;
-  });
+      push(ref(db, "comments"), commentObj);
+      document.getElementById("name").value = "";
+      document.getElementById("comment").value = "";
+    };
 
-  likeBtn.addEventListener("click", async () => {
-    try {
-      const snap = await get(likeRef);
-      const current = snap.exists() ? snap.val() : 0;
-      await set(likeRef, current + 1);
-    } catch (err) {
-      console.error("Error updating likes:", err);
-    }
-  });
-</script>
+    // Display Comments
+    const commentsRef = ref(db, "comments");
+    const commentsDiv = document.getElementById("comments");
 
-</head>
+    onValue(commentsRef, (snapshot) => {
+      commentsDiv.innerHTML = "";
+      if (!snapshot.exists()) {
+        commentsDiv.innerHTML = "<p>No comments yet.</p>";
+        return;
+      }
 
-<body>
-  <header>
-    <h1>Blackpink – How You Like That</h1>
-  </header>
+      snapshot.forEach((child) => {
+        const data = child.val();
+        const id = child.key;
+        const commentHTML = `
+          <div>
+            <p><strong>${data.name}</strong>: ${data.comment}</p>
+            <button onclick="deleteComment('${id}')">🗑 Delete</button>
+          </div>
+        `;
+        commentsDiv.innerHTML += commentHTML;
+      });
+    });
 
-  <h2>💬 Scroll down to leave a comment after watching!</h2>
+    // Delete Comment
+    window.deleteComment = async (commentId) => {
+      const password = prompt("Enter delete password:");
+      const commentRef = ref(db, "comments/" + commentId);
+      const snapshot = await get(commentRef);
+      if (snapshot.exists()) {
+        const storedPassword = snapshot.val().deletePassword;
+        if (password === storedPassword) {
+          await remove(commentRef);
+          alert("Comment deleted.");
+        } else {
+          alert("Incorrect password.");
+        }
+      }
+    };
 
-  <div class="video-container">
-    <video controls>
-      <source src="howyoulikethat.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-  </div>
+    // Like Button
+    const likeBtn = document.getElementById("like-btn");
+    const likeCountText = document.getElementById("like-count");
+    const likeRef = ref(db, "likes/count");
 
-  <div class="like-container">
-    <button id="like-btn">❤️ Like this video</button>
-    <div id="like-count">👍 Likes: 0</div>
-  </div>
+    onValue(likeRef, (snapshot) => {
+      const count = snapshot.val() || 0;
+      likeCountText.textContent = `👍 Likes: ${count}`;
+    });
 
-  <div class="subcaption">
-    That's just the beginning. Just wait for the rest.
-  </div>
+    likeBtn.addEventListener("click", async () => {
+      try {
+        const snap = await get(likeRef);
+        const current = snap.exists() ? snap.val() : 0;
+        await set(likeRef, current + 1);
+      } catch (err) {
+        console.error("Error updating likes:", err);
+      }
+    });
+  </script>
 
-  <h2>💬 Leave your comments below!</h2>
-
-  <div id="comment-section">
-    <input type="text" id="name" placeholder="Your name">
-    <textarea id="comment" placeholder="Your comment"></textarea>
-    <button onclick="submitComment()">Post Comment</button>
-  </div>
-
-  <div id="comments"></div>
 </body>
 </html>
