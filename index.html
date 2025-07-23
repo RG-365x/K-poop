@@ -1,45 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>K-Poop</title>
   <style>
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       padding: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #ffe6f0;
-      color: #660033;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: #000814;
+      color: #a6faff;
       text-align: center;
     }
 
     header {
-      background-color: #ff99cc;
+      background: linear-gradient(90deg, #00f0ff 0%, #006eff 100%);
       padding: 30px 0;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
     }
 
     h1 {
       font-size: 48px;
       margin: 0;
-      text-shadow: 1px 1px #ffccdd;
+      color: #000;
+      text-shadow: 0 0 5px #00f0ff, 0 0 10px #00f0ff;
     }
 
     .description {
-      max-width: 700px;
+      max-width: 750px;
       margin: 40px auto;
-      font-size: 20px;
+      font-size: 18px;
       line-height: 1.6;
-      background-color: #fff0f5;
-      padding: 20px;
-      border-radius: 15px;
-      box-shadow: 0 0 15px #ffb6c1;
+      background-color: rgba(0, 255, 255, 0.05);
+      padding: 25px;
+      border: 1px solid #00d4ff;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
     }
 
     .caption {
-      font-size: 18px;
-      color: #99004d;
-      margin-top: -20px;
+      font-size: 16px;
+      color: #66fcff;
+      margin-top: -10px;
       margin-bottom: 30px;
       font-style: italic;
     }
@@ -49,18 +55,22 @@
     }
 
     .video-button {
-      background-color: #ff66b2;
+      background: #00f0ff;
       border: none;
-      color: white;
+      color: #000814;
       font-size: 20px;
-      padding: 15px 30px;
-      border-radius: 10px;
+      padding: 15px 40px;
+      border-radius: 12px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 15px #00f0ff;
+      font-weight: bold;
     }
 
     .video-button:hover {
-      background-color: #e60073;
+      background: #00bfff;
+      box-shadow: 0 0 25px #00e0ff, 0 0 10px #00e0ff inset;
+      transform: scale(1.05);
     }
   </style>
 </head>
@@ -72,7 +82,7 @@
 
   <div class="description">
     <p>K-pop has millions of fans—but <b>TWICE</b> as many haters. Whether it’s the flashy visuals, intense fandom culture, or repetitive beats, a lot of people just can't stand it.</p>
-    <p>So we created <strong>K-Poop</strong>: a parody project that pokes fun at the genre in the most *extra* way possible. This site is not for hardcore fans—it's satire, chaos, and unapologetic nonsense all in one place. Welcome to the madness!<br> <b>Starting off the project with: Blackpink's How you like that</b></p>
+    <p>So we created <strong>K-Poop</strong>: a parody project that pokes fun at the genre in the most *extra* way possible. This site is not for joblessly wasting time and trolling people. It's for spreading awareness on how the most pathetic genre in music can be <strong> TROLLED</strong>.<br> <b>Starting off the project with: Blackpink's How you like that</b></p>
   </div>
 
   <div class="caption">
@@ -81,7 +91,7 @@
 
   <div class="button-container">
     <button class="video-button" onclick="window.location.href='Howyoulikethat.html'">
-       How you like that - BLACKPINK
+       How You Like That – BLACKPINK
     </button>
   </div>
 

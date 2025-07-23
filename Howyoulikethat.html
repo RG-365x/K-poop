@@ -9,26 +9,28 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
-      background-color: #fff8fb;
-      color: #333;
+      background-color: #0d1117;
+      color: #e6f6ff;
     }
 
     header {
-      background-color: #ff99cc;
+      background-color: #0b0f14;
       padding: 30px 0;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
       text-align: center;
+      border-bottom: 1px solid #00fff7;
+      box-shadow: 0 0 10px #00fff7;
     }
 
     h1 {
       font-size: 42px;
       margin: 0;
-      text-shadow: 1px 1px #ffccdd;
+      text-shadow: 0 0 10px #00ffe7;
+      color: #00ffe7;
     }
 
     h2 {
       margin-top: 30px;
-      color: #cc0066;
+      color: #00ccff;
       text-align: center;
     }
 
@@ -36,7 +38,7 @@
       max-width: 90%;
       margin: 20px auto;
       border-radius: 15px;
-      box-shadow: 0 0 20px #ffb6c1;
+      box-shadow: 0 0 30px #00ffe7;
       overflow: hidden;
     }
 
@@ -50,15 +52,15 @@
     .subcaption {
       font-size: 18px;
       font-style: italic;
-      color: #99004d;
+      color: #9efeff;
       margin-bottom: 40px;
       max-width: 800px;
       margin-left: auto;
       margin-right: auto;
-      background-color: #fff0f5;
+      background-color: #101820;
       padding: 15px;
       border-radius: 10px;
-      box-shadow: 0 0 10px #f9b6d1;
+      box-shadow: 0 0 10px #00ffe7;
       text-align: center;
     }
 
@@ -69,28 +71,40 @@
     }
 
     #like-btn {
-      background-color: #ff3399;
-      color: white;
+      background-color: #00e6e6;
+      color: #000;
       padding: 10px 20px;
       font-size: 16px;
       border: none;
       border-radius: 6px;
       cursor: pointer;
       margin-bottom: 10px;
+      transition: background-color 0.3s;
+    }
+
+    #like-btn:hover {
+      background-color: #00ffff;
+    }
+
+    #like-btn:disabled {
+      background-color: #222;
+      color: #00ffff;
+      cursor: default;
     }
 
     #like-count {
       font-size: 16px;
+      color: #88f2ff;
     }
 
     #comment-section {
       max-width: 600px;
       margin: 30px auto;
       text-align: left;
-      background-color: #fff0f5;
+      background-color: #121821;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 0 10px #f9b6d1;
+      box-shadow: 0 0 10px #00ffe7;
     }
 
     #comment-section input,
@@ -100,17 +114,24 @@
       margin-bottom: 10px;
       font-size: 16px;
       border-radius: 5px;
-      border: 1px solid #ccc;
+      border: 1px solid #00cccc;
+      background-color: #0d1117;
+      color: #e6f6ff;
     }
 
     #comment-section button {
       padding: 10px 20px;
       font-size: 16px;
-      background-color: #ff66b2;
-      color: white;
+      background-color: #00cccc;
+      color: #000;
       border: none;
       border-radius: 5px;
       cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #comment-section button:hover {
+      background-color: #00ffff;
     }
 
     #comments {
@@ -119,11 +140,11 @@
     }
 
     #comments div {
-      background: #fff0fa;
+      background: #101821;
       padding: 10px;
       border-radius: 5px;
       margin-bottom: 10px;
-      box-shadow: 0 0 6px #f4b8d3;
+      box-shadow: 0 0 6px #00ffe7;
     }
 
     #comments p {
@@ -132,98 +153,93 @@
 
     .timestamp {
       font-size: 0.8em;
-      color: #777;
+      color: #77ddee;
     }
   </style>
 
   <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import {
-    getDatabase,
-    ref,
-    onValue,
-    get,
-    set,
-    push,
-    serverTimestamp,
-    increment
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      onValue,
+      get,
+      set,
+      push,
+      serverTimestamp,
+      increment
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-  const firebaseConfig = {
-    databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app/"
-  };
+    const firebaseConfig = {
+      databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app/"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-  // LIKE SYSTEM --------------------
-  const likeBtn = document.getElementById("like-btn");
-  const likeCount = document.getElementById("like-count");
-  const likeRef = ref(db, "likes/count");
+    // LIKE SYSTEM --------------------
+    const likeBtn = document.getElementById("like-btn");
+    const likeCount = document.getElementById("like-count");
+    const likeRef = ref(db, "likes/count");
 
-  // Update like count live
-  onValue(likeRef, (snapshot) => {
-    const count = snapshot.val() || 0;
-    likeCount.textContent = `👍 Likes: ${count}`;
-  });
+    onValue(likeRef, (snapshot) => {
+      const count = snapshot.val() || 0;
+      likeCount.textContent = `👍 Likes: ${count}`;
+    });
 
-  // If already liked, disable button
-  if (localStorage.getItem("liked") === "true") {
-    likeBtn.textContent = "❤️ Liked";
-    likeBtn.disabled = true;
-  }
-
-  likeBtn.addEventListener("click", async () => {
-    if (localStorage.getItem("liked") === "true") return;
-
-    try {
-      await set(likeRef, increment(1)); // Add 1 atomically
-      localStorage.setItem("liked", "true");
+    if (localStorage.getItem("liked") === "true") {
       likeBtn.textContent = "❤️ Liked";
       likeBtn.disabled = true;
-    } catch (error) {
-      console.error("Like error:", error);
     }
-  });
 
-  // COMMENTS SYSTEM ----------------
-  const commentForm = document.getElementById("comment-form");
-  const commentsDiv = document.getElementById("comments");
-  const commentsRef = ref(db, "comments");
+    likeBtn.addEventListener("click", async () => {
+      if (localStorage.getItem("liked") === "true") return;
+      try {
+        const currentSnapshot = await get(likeRef);
+        const current = currentSnapshot.val() || 0;
+        await set(likeRef, current + 1);
+        localStorage.setItem("liked", "true");
+        likeBtn.textContent = "❤️ Liked";
+        likeBtn.disabled = true;
+      } catch (error) {
+        console.error("Like error:", error);
+      }
+    });
 
-  onValue(commentsRef, (snapshot) => {
-    commentsDiv.innerHTML = "";
-    const comments = snapshot.val();
-    for (let id in comments) {
-      const { name, comment, timestamp } = comments[id];
-      const date = timestamp ? new Date(timestamp).toLocaleString() : "Unknown time";
+    // COMMENTS SYSTEM ----------------
+    const commentForm = document.getElementById("comment-form");
+    const commentsDiv = document.getElementById("comments");
+    const commentsRef = ref(db, "comments");
 
-      const div = document.createElement("div");
-      div.innerHTML = `
-        <p><strong>${name}</strong> <span class="timestamp">(${date})</span></p>
-        <p>${comment}</p>
-      `;
-      commentsDiv.prepend(div);
-    }
-  });
+    onValue(commentsRef, (snapshot) => {
+      commentsDiv.innerHTML = "";
+      const comments = snapshot.val();
+      for (let id in comments) {
+        const { name, comment, timestamp } = comments[id];
+        const date = timestamp ? new Date(timestamp).toLocaleString() : "Unknown time";
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <p><strong>${name}</strong> <span class="timestamp">(${date})</span></p>
+          <p>${comment}</p>
+        `;
+        commentsDiv.prepend(div);
+      }
+    });
 
-  commentForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const name = document.getElementById("name").value.trim();
-    const comment = document.getElementById("comment").value.trim();
-
-    if (name && comment) {
-      push(commentsRef, {
-        name,
-        comment,
-        timestamp: Date.now()
-      });
-
-      commentForm.reset();
-    }
-  });
-</script>
-
+    commentForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name").value.trim();
+      const comment = document.getElementById("comment").value.trim();
+      if (name && comment) {
+        push(commentsRef, {
+          name,
+          comment,
+          timestamp: Date.now()
+        });
+        commentForm.reset();
+      }
+    });
+  </script>
 </head>
 
 <body>
