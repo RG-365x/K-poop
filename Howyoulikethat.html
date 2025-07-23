@@ -136,100 +136,105 @@
   </style>
 
   <!-- Firebase Setup -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, push, onValue, remove, get, set } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
-      authDomain: "k-poop-comments.firebaseapp.com",
-      projectId: "k-poop-comments",
-      storageBucket: "k-poop-comments.appspot.com",
-      messagingSenderId: "323112465515",
-      appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
-      measurementId: "G-5PLQLQG8DR",
-      databaseURL: "https://k-poop-comments-default-rtdb.firebaseio.com/"
+  const firebaseConfig = {
+    apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
+    authDomain: "k-poop-comments.firebaseapp.com",
+    projectId: "k-poop-comments",
+    storageBucket: "k-poop-comments.appspot.com",
+    messagingSenderId: "323112465515",
+    appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
+    measurementId: "G-5PLQLQG8DR",
+    databaseURL: "https://k-poop-comments-default-rtdb.firebaseio.com/"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+
+  // Submit Comment
+  window.submitComment = () => {
+    const name = document.getElementById("name").value.trim();
+    const comment = document.getElementById("comment").value.trim();
+
+    if (!name || !comment) {
+      alert("Please enter both name and comment.");
+      return;
+    }
+
+    const commentObj = {
+      name,
+      comment,
+      deletePassword: "kpoopforever", // Optional, no longer required to view
+      timestamp: Date.now()
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    push(ref(db, "comments"), commentObj);
+    document.getElementById("name").value = "";
+    document.getElementById("comment").value = "";
+  };
 
-    // Submit Comment
-    window.submitComment = () => {
-      const name = document.getElementById("name").value.trim();
-      const comment = document.getElementById("comment").value.trim();
+  // Display Comments
+  const commentsRef = ref(db, "comments");
+  const commentsDiv = document.getElementById("comments");
 
-      if (!name || !comment) {
-        alert("Please enter both name and comment.");
-        return;
-      }
+  onValue(commentsRef, (snapshot) => {
+    commentsDiv.innerHTML = "";
+    snapshot.forEach((child) => {
+      const data = child.val() || {};
+      const id = child.key;
+      const name = data.name || "Anonymous";
+      const comment = data.comment || "";
 
-      const commentObj = {
-        name,
-        comment,
-        deletePassword: "kpoopforever"
-      };
-
-      push(ref(db, "comments"), commentObj);
-      document.getElementById("name").value = "";
-      document.getElementById("comment").value = "";
-    };
-
-    // Display Comments
-    const commentsRef = ref(db, "comments");
-    const commentsDiv = document.getElementById("comments");
-
-    onValue(commentsRef, (snapshot) => {
-      commentsDiv.innerHTML = "";
-      snapshot.forEach((child) => {
-        const data = child.val();
-        const id = child.key;
-        const commentHTML = `
-          <div>
-            <p><strong>${data.name}</strong>: ${data.comment}</p>
-            <button onclick="deleteComment('${id}')">🗑 Delete</button>
-          </div>
-        `;
-        commentsDiv.innerHTML += commentHTML;
-      });
+      const commentHTML = `
+        <div>
+          <p><strong>${name}</strong>: ${comment}</p>
+          <button onclick="deleteComment('${id}')">🗑 Delete</button>
+        </div>
+      `;
+      commentsDiv.innerHTML += commentHTML;
     });
+  });
 
-    // Delete Comment
-    window.deleteComment = async (commentId) => {
-      const password = prompt("Enter delete password:");
-      const commentRef = ref(db, "comments/" + commentId);
-      const snapshot = await get(commentRef);
-      if (snapshot.exists()) {
-        const storedPassword = snapshot.val().deletePassword;
-        if (password === storedPassword) {
-          await remove(commentRef);
-          alert("Comment deleted.");
-        } else {
-          alert("Incorrect password.");
-        }
+  // Delete Comment
+  window.deleteComment = async (commentId) => {
+    const password = prompt("Enter delete password:");
+    const commentRef = ref(db, "comments/" + commentId);
+    const snapshot = await get(commentRef);
+    if (snapshot.exists()) {
+      const storedPassword = snapshot.val().deletePassword || "";
+      if (password === storedPassword) {
+        await remove(commentRef);
+        alert("Comment deleted.");
+      } else {
+        alert("Incorrect password.");
       }
-    };
+    }
+  };
 
-    // Like Button
-    const likeBtn = document.getElementById("like-btn");
-    const likeCountText = document.getElementById("like-count");
-    const likeRef = ref(db, "likes/count");
+  // Like Button
+  const likeBtn = document.getElementById("like-btn");
+  const likeCountText = document.getElementById("like-count");
+  const likeRef = ref(db, "likes/count");
 
-    onValue(likeRef, (snapshot) => {
-      const count = snapshot.val() || 0;
-      likeCountText.textContent = `👍 Likes: ${count}`;
-    });
+  onValue(likeRef, (snapshot) => {
+    const count = snapshot.val() || 0;
+    likeCountText.textContent = `👍 Likes: ${count}`;
+  });
 
-    likeBtn.addEventListener("click", async () => {
-      try {
-        const snap = await get(likeRef);
-        const current = snap.exists() ? snap.val() : 0;
-        await set(likeRef, current + 1);
-      } catch (err) {
-        console.error("Error updating likes:", err);
-      }
-    });
-  </script>
+  likeBtn.addEventListener("click", async () => {
+    try {
+      const snap = await get(likeRef);
+      const current = snap.exists() ? snap.val() : 0;
+      await set(likeRef, current + 1);
+    } catch (err) {
+      console.error("Error updating likes:", err);
+    }
+  });
+</script>
+
 </head>
 
 <body>
