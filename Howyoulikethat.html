@@ -1,19 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Blackpink – How You Like That</title>
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7HR4EXZCMY"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-7HR4EXZCMY');
+  </script>
+
   <style>
     body {
-      margin: 0;
-      padding: 0;
       font-family: 'Segoe UI', sans-serif;
+      margin: 0;
       background-color: #ffe6f0;
       color: #660033;
       text-align: center;
     }
     header {
-      background-color: #ff99cc;
+      background: #ff99cc;
       padding: 30px 0;
       box-shadow: 0 2px 5px rgba(0,0,0,0.2);
     }
@@ -35,65 +44,7 @@
     }
     video {
       width: 100%;
-      height: auto;
-      display: block;
       border-radius: 15px;
-    }
-    .subcaption {
-      font-size: 18px;
-      font-style: italic;
-      color: #99004d;
-      margin-bottom: 40px;
-      max-width: 800px;
-      margin-left: auto;
-      margin-right: auto;
-      background-color: #fff0f5;
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px #f9b6d1;
-    }
-    #comment-section {
-      max-width: 600px;
-      margin: 30px auto;
-      text-align: left;
-    }
-    #comment-section input,
-    #comment-section textarea {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    #comment-section button {
-      padding: 10px 20px;
-      font-size: 16px;
-      background-color: #ff66b2;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #comments div {
-      background: #fff0fa;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 10px;
-      box-shadow: 0 0 6px #f4b8d3;
-    }
-    #comments p {
-      margin: 5px 0;
-    }
-    #comments button {
-      font-size: 12px;
-      padding: 4px 8px;
-      margin-top: 5px;
-      background-color: #cc0055;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
     }
     .like-container {
       margin-top: 20px;
@@ -107,23 +58,62 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+    }
+    .subcaption {
+      margin: 20px auto;
+      max-width: 800px;
+      background: #fff0f5;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #f9b6d1;
+      font-style: italic;
+    }
+    #comment-section {
+      max-width: 600px;
+      margin: 30px auto;
+      text-align: left;
+    }
+    #comment-section input,
+    #comment-section textarea {
+      width: 100%;
+      padding: 10px;
       margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    #comment-section button {
+      padding: 10px 20px;
+      background-color: #ff66b2;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    #comments div {
+      background: #fff0fa;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      box-shadow: 0 0 6px #f4b8d3;
+    }
+    #comments button {
+      font-size: 12px;
+      padding: 4px 8px;
+      margin-top: 5px;
+      background-color: #cc0055;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
     }
   </style>
 
-  <!-- Google Analytics -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-7HR4EXZCMY"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-7HR4EXZCMY');
-  </script>
-
-  <!-- Firebase Setup -->
+  <!-- Firebase App + DB -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, push, onValue, remove, set, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+    import { getDatabase, ref, push, onValue, remove, get, set, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
@@ -138,17 +128,15 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app, "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app");
 
-    // Submit comment
     window.submitComment = function () {
       const name = document.getElementById("name").value.trim();
       const comment = document.getElementById("comment").value.trim();
-      if (!name || !comment) return alert("Both fields required");
+      if (!name || !comment) return alert("Both fields required.");
       push(ref(db, "comments"), { name, comment, timestamp: Date.now() });
       document.getElementById("name").value = "";
       document.getElementById("comment").value = "";
     };
 
-    // Delete comment with password
     window.deleteComment = function (key) {
       const pw = prompt("Enter password to delete:");
       if (pw === "kpoopforever") remove(ref(db, "comments/" + key));
@@ -157,19 +145,45 @@
 
     async function getUserIP() {
       try {
-        const response = await fetch("https://api.ipify.org?format=json");
-        const data = await response.json();
+        const res = await fetch("https://api.ipify.org?format=json");
+        const data = await res.json();
         return data.ip;
       } catch {
         return null;
       }
     }
 
-    window.addEventListener("load", async () => {
+    window.addEventListener("DOMContentLoaded", async () => {
+      const likeBtn = document.getElementById("like-btn");
+      const likeCountText = document.getElementById("like-count");
+      const likeRef = ref(db, "likes/count");
+      const ipLikesRef = ref(db, "likes/ips");
+
+      // Update like count in real-time
+      onValue(likeRef, (snapshot) => {
+        const count = snapshot.val() || 0;
+        if (likeCountText) likeCountText.textContent = `👍 Likes: ${count}`;
+      });
+
+      // Like button click
+      likeBtn?.addEventListener("click", async () => {
+        const ip = await getUserIP();
+        if (!ip) return alert("Could not verify IP.");
+        const ipSnap = await get(child(ref(db), `likes/ips/${ip}`));
+        if (ipSnap.exists()) return alert("You've already liked this!");
+
+        const countSnap = await get(likeRef);
+        const current = countSnap.exists() ? countSnap.val() : 0;
+        await set(likeRef, current + 1);
+        await set(ref(db, `likes/ips/${ip}`), true);
+        gtag('event', 'like_added');
+      });
+
+      // Load comments
       const commentBox = document.getElementById("comments");
       onValue(ref(db, "comments"), (snapshot) => {
-        commentBox.innerHTML = "";
         const data = snapshot.val();
+        commentBox.innerHTML = "";
         if (data) {
           Object.entries(data).forEach(([key, value]) => {
             const entry = document.createElement("div");
@@ -178,45 +192,9 @@
           });
         }
       });
-
-      // LIKE BUTTON LOGIC
-      const likeBtn = document.getElementById("like-btn");
-      const likeCountText = document.getElementById("like-count");
-      const likeCountRef = ref(db, "likes/count");
-      const ipRef = ref(db, "likes/ips");
-
-      onValue(likeCountRef, (snapshot) => {
-        const count = snapshot.val() || 0;
-        likeCountText.textContent = `👍 Likes: ${count}`;
-      });
-
-      likeBtn.addEventListener("click", async () => {
-        const ip = await getUserIP();
-        if (!ip) return alert("Could not fetch IP address.");
-
-        const userRef = ref(db, `likes/ips/${ip}`);
-        const userSnap = await get(userRef);
-        const now = Date.now();
-
-        if (userSnap.exists()) {
-          const lastLiked = userSnap.val();
-          if (now - lastLiked < 86400000) {
-            alert("You've already liked this in the last 24 hours!");
-            return;
-          }
-        }
-
-        const countSnap = await get(likeCountRef);
-        const currentCount = countSnap.exists() ? countSnap.val() : 0;
-
-        await set(likeCountRef, currentCount + 1);
-        await set(userRef, now);
-        gtag('event', 'like_added');
-      });
     });
   </script>
 </head>
-
 <body>
   <header>
     <h1>Blackpink – How You Like That</h1>
@@ -226,7 +204,7 @@
 
   <div class="video-container">
     <video controls>
-      <source src="howyoulikethat.mp4" type="video/mp4">
+      <source src="howyoulikethat.mp4" type="video/mp4" />
       Your browser does not support the video tag.
     </video>
   </div>
@@ -243,7 +221,7 @@
   <h2>💬 Leave your comments below!</h2>
 
   <div id="comment-section">
-    <input type="text" id="name" placeholder="Your name">
+    <input type="text" id="name" placeholder="Your name" />
     <textarea id="comment" placeholder="Your comment"></textarea>
     <button onclick="submitComment()">Post Comment</button>
   </div>
