@@ -2,28 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>BTS - Butter</title>
+
+  <!-- Firebase Modular SDK (v12) -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js";
+    import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-database.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.0.0/firebase-analytics.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDXsvzgFTWwbWqfU4HmVJtC2Xt1vhR8bsc",
+      authDomain: "k-poop-2.firebaseapp.com",
+      databaseURL: "https://k-poop-2-default-rtdb.firebaseio.com",
+      projectId: "k-poop-2",
+      storageBucket: "k-poop-2.firebasestorage.app",
+      messagingSenderId: "730074754652",
+      appId: "1:730074754652:web:1fa63683279b435bcbc099",
+      measurementId: "G-Z4997ZSL3K"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const analytics = getAnalytics(app);
+
+    // Submit Comment
+    window.submitComment = async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('nameInput').value.trim();
+      const comment = document.getElementById('commentInput').value.trim();
+      if (!name || !comment) return;
+
+      const commentData = {
+        name,
+        comment,
+        timestamp: new Date().toLocaleString()
+      };
+
+      await push(ref(db, 'comments'), commentData);
+      document.querySelector('.comment-form').reset();
+    }
+
+    // Load Comments
+    const commentsRef = ref(db, 'comments');
+    onValue(commentsRef, (snapshot) => {
+      const container = document.getElementById('commentsContainer');
+      container.innerHTML = '';
+      const comments = snapshot.val();
+      if (comments) {
+        Object.values(comments).forEach(({ name, comment, timestamp }) => {
+          const div = document.createElement('div');
+          div.className = 'comment';
+          div.innerHTML = `<strong>${name}</strong> <em>(${timestamp})</em><br>${comment}`;
+          container.prepend(div);
+        });
+      }
+    });
+
+    // Like Button
+    const LIKE_KEY = 'liked_butter_page';
+    const likeBtn = document.getElementById('likeBtn');
+
+    const updateLikeUI = (liked) => {
+      likeBtn.textContent = liked ? '❤️ Liked' : 'Like 👍';
+      likeBtn.disabled = liked;
+    };
+
+    likeBtn.addEventListener('click', async () => {
+      if (!localStorage.getItem(LIKE_KEY)) {
+        await push(ref(db, 'likes'), { timestamp: Date.now() });
+        localStorage.setItem(LIKE_KEY, 'true');
+        updateLikeUI(true);
+      }
+    });
+
+    updateLikeUI(localStorage.getItem(LIKE_KEY) === 'true');
+  </script>
+
   <style>
-    /* Existing styles from user */
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       margin: 0;
       padding: 0;
       background-color: #0d1117;
       color: #e6f6ff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
     }
     header {
       background-color: #0b0f14;
       padding: 30px 0;
-      width: 100%;
       text-align: center;
       border-bottom: 1px solid #00fff7;
       box-shadow: 0 0 10px #00fff7;
-      box-sizing: border-box;
     }
     h1 {
       font-size: 42px;
@@ -66,427 +135,80 @@
       box-shadow: 0 0 10px #00ffe7;
       text-align: center;
     }
-
-    /* New styles for comments and like button */
-    .content-wrapper {
-      max-width: 900px;
-      width: 100%;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-
-    .like-button-container {
-      text-align: center;
-      margin: 20px 0;
-    }
-    .like-button {
-      padding: 12px 24px;
-      font-size: 18px;
-      font-weight: bold;
-      color: #fff;
-      background-color: #ff007f;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      box-shadow: 0 0 20px #ff007f;
-      transition: background-color 0.3s, transform 0.1s, box-shadow 0.3s;
-      outline: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .like-button:hover:not(:disabled) {
-      background-color: #e60073;
-      box-shadow: 0 0 30px #ff007f;
-      transform: scale(1.05);
-    }
-    .like-button:active:not(:disabled) {
-      transform: scale(0.98);
-    }
-    .like-button:disabled {
-      background-color: #610034;
-      cursor: not-allowed;
-      box-shadow: 0 0 10px #610034;
-    }
-    .like-count {
-      font-size: 16px;
-      color: #ff007f;
-      margin-left: 10px;
-      font-weight: bold;
-    }
-
-    .comments-section {
-      margin-top: 40px;
-      padding: 20px;
+    .comment-section {
+      max-width: 800px;
+      margin: 40px auto;
       background-color: #101820;
+      padding: 20px;
       border-radius: 15px;
-      box-shadow: 0 0 20px #00ccff;
+      box-shadow: 0 0 10px #00ffe7;
     }
-    .comments-form h3 {
-      text-align: center;
+    .comment-section h3 {
       color: #00ccff;
-      margin-bottom: 20px;
+      text-align: center;
     }
-    .comments-form input,
-    .comments-form textarea {
+    .comment-form input, .comment-form textarea {
       width: 100%;
       padding: 10px;
-      margin-bottom: 15px;
+      margin: 8px 0;
       background-color: #0d1117;
-      border: 1px solid #00fff7;
-      border-radius: 8px;
       color: #e6f6ff;
-      font-size: 16px;
-      box-sizing: border-box;
-      outline: none;
-      transition: border-color 0.3s, box-shadow 0.3s;
+      border: 1px solid #00ffe7;
+      border-radius: 5px;
     }
-    .comments-form input:focus,
-    .comments-form textarea:focus {
-      border-color: #ff007f;
-      box-shadow: 0 0 10px #ff007f;
+    .comment-form button {
+      background-color: #00ffe7;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
     }
-    .comments-form button {
+    .comment {
+      border-top: 1px solid #00ffe7;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+    .like-button {
       display: block;
-      width: 100%;
-      padding: 12px;
-      background-color: #00ccff;
-      color: #0d1117;
+      margin: 20px auto;
+      padding: 10px 25px;
+      font-size: 16px;
+      background-color: #00ffe7;
       border: none;
       border-radius: 8px;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-      box-shadow: 0 0 10px #00ccff;
-      transition: background-color 0.3s, transform 0.1s;
-      outline: none;
-    }
-    .comments-form button:hover {
-      background-color: #00b3e6;
-      transform: scale(1.01);
-    }
-
-    #comments-list {
-      margin-top: 20px;
-    }
-    .comment-item {
-      border-top: 1px solid #00fff7;
-      padding: 15px 0;
-    }
-    .comment-item:first-child {
-      border-top: none;
-    }
-    .comment-item p {
-      margin: 0;
-      line-height: 1.5;
-    }
-    .comment-item strong {
-      color: #00ffe7;
-      font-size: 18px;
-      margin-right: 8px;
-    }
-    .comment-item .timestamp {
-      font-size: 12px;
-      color: #888;
-      float: right;
-    }
-    .message-box {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background-color: #101820;
-      color: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 20px #00fff7;
-      z-index: 1000;
-      display: none; /* Hidden by default */
-      text-align: center;
-      width: 300px;
-    }
-    .message-box button {
-      margin-top: 10px;
-      padding: 8px 16px;
-      background-color: #00ccff;
-      color: #0d1117;
-      border: none;
-      border-radius: 5px;
       cursor: pointer;
     }
   </style>
-  <!-- Firebase SDKs -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, serverTimestamp, orderBy, getDoc, doc, setDoc, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Global variables provided by the Canvas environment
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-
-    // Firebase Initialization
-    let app, auth, db;
-    let userId = null;
-
-    // Helper function to show a custom message box instead of alert()
-    function showMessage(message) {
-      const messageBox = document.getElementById('message-box');
-      document.getElementById('message-text').textContent = message;
-      messageBox.style.display = 'block';
-    }
-
-    function hideMessage() {
-      const messageBox = document.getElementById('message-box');
-      messageBox.style.display = 'none';
-    }
-
-    // Function to format Firestore timestamp
-    function formatTimestamp(timestamp) {
-      if (timestamp && timestamp.toDate) {
-        const date = timestamp.toDate();
-        return date.toLocaleString();
-      }
-      return 'Just now';
-    }
-
-    window.onload = async function() {
-      // Check if Firebase configuration is valid
-      if (!firebaseConfig.apiKey) {
-        showMessage("Firebase configuration not found. Please ensure the project is correctly set up.");
-        console.error("Firebase configuration is missing the API key.");
-        return;
-      }
-      
-      // Initialize Firebase services
-      try {
-        app = initializeApp(firebaseConfig);
-        auth = getAuth(app);
-        db = getFirestore(app);
-
-        // Authenticate the user
-        if (initialAuthToken) {
-          await signInWithCustomToken(auth, initialAuthToken);
-        } else {
-          await signInAnonymously(auth);
-        }
-
-      } catch (e) {
-        console.error("Error initializing Firebase:", e);
-        showMessage("Failed to initialize the application. Please try again later.");
-        return;
-      }
-
-      onAuthStateChanged(auth, (user) => {
-        if (user) {
-          userId = user.uid;
-          console.log("User authenticated with ID:", userId);
-
-          // Once authenticated, setup listeners for comments and likes
-          setupLikesListener();
-          setupCommentsListener();
-          document.getElementById('userIdDisplay').textContent = `User ID: ${userId}`;
-        } else {
-          console.log("No user is signed in.");
-          userId = null;
-        }
-      });
-      
-      const likeButton = document.getElementById('like-button');
-      const likeCountSpan = document.getElementById('like-count');
-      const commentsForm = document.getElementById('comments-form');
-      const commentsList = document.getElementById('comments-list');
-      const messageBoxButton = document.querySelector('#message-box button');
-
-      // Add event listener to the message box button
-      messageBoxButton.addEventListener('click', hideMessage);
-
-      // Function to setup the listener for likes
-      function setupLikesListener() {
-        const likesRef = doc(db, `/artifacts/${appId}/public/data/`, 'likes');
-        onSnapshot(likesRef, (docSnap) => {
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            const likedUsers = data.users || [];
-            likeCountSpan.textContent = likedUsers.length;
-
-            if (userId && likedUsers.includes(userId)) {
-              likeButton.textContent = 'Liked';
-              likeButton.disabled = true;
-            } else {
-              likeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="lucide lucide-heart">
-  <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-</svg> Like`;
-              likeButton.disabled = false;
-            }
-          } else {
-            console.log("No likes document found, creating one.");
-            // Document does not exist, initialize it with a count of 0
-            likeCountSpan.textContent = 0;
-            // The button will remain in its default state
-          }
-        }, (error) => {
-          console.error("Error fetching likes:", error);
-        });
-      }
-
-      // Function to handle like button click
-      likeButton.addEventListener('click', async () => {
-        if (!userId) {
-          showMessage("Please wait, we are authenticating you...");
-          return;
-        }
-
-        const likesRef = doc(db, `/artifacts/${appId}/public/data/`, 'likes');
-
-        try {
-          const docSnap = await getDoc(likesRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            const likedUsers = data.users || [];
-            if (!likedUsers.includes(userId)) {
-              await updateDoc(likesRef, {
-                users: arrayUnion(userId)
-              });
-              console.log("Successfully liked the post.");
-            }
-          } else {
-            await setDoc(likesRef, {
-              users: [userId]
-            });
-            console.log("Created likes document and liked the post.");
-          }
-        } catch (e) {
-          console.error("Error adding like:", e);
-          showMessage("Failed to like the post. Please try again.");
-        }
-      });
-
-      // Function to setup the listener for comments
-      function setupCommentsListener() {
-        const commentsRef = collection(db, `/artifacts/${appId}/public/data/comments`);
-        const q = query(commentsRef, orderBy('timestamp', 'desc')); // Fetch comments sorted by timestamp
-
-        onSnapshot(q, (querySnapshot) => {
-          commentsList.innerHTML = ''; // Clear existing comments
-          querySnapshot.forEach((doc) => {
-            const comment = doc.data();
-            const commentItem = document.createElement('div');
-            commentItem.classList.add('comment-item');
-
-            const timestamp = formatTimestamp(comment.timestamp);
-            
-            commentItem.innerHTML = `
-              <p>
-                <strong>${comment.name}</strong>
-                <span class="timestamp">${timestamp}</span>
-              </p>
-              <p>${comment.comment}</p>
-            `;
-            commentsList.appendChild(commentItem);
-          });
-        }, (error) => {
-          console.error("Error fetching comments:", error);
-        });
-      }
-      
-      // Function to handle comment form submission
-      commentsForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        if (!userId) {
-          showMessage("Please wait, we are authenticating you...");
-          return;
-        }
-
-        const nameInput = document.getElementById('name');
-        const commentInput = document.getElementById('comment');
-        
-        const name = nameInput.value.trim();
-        const comment = commentInput.value.trim();
-        
-        if (name === '' || comment === '') {
-          showMessage("Please enter both your name and a comment.");
-          return;
-        }
-        
-        if (comment.length > 500) {
-            showMessage("Comment must be less than 500 characters.");
-            return;
-        }
-        
-        const commentsRef = collection(db, `/artifacts/${appId}/public/data/comments`);
-
-        try {
-          await addDoc(commentsRef, {
-            name: name,
-            comment: comment,
-            timestamp: serverTimestamp()
-          });
-          
-          // Clear the form inputs
-          nameInput.value = '';
-          commentInput.value = '';
-          
-          console.log("Comment added successfully!");
-        } catch (e) {
-          console.error("Error adding comment:", e);
-          showMessage("Failed to post comment. Please try again.");
-        }
-      });
-    };
-  </script>
 </head>
+
 <body>
   <header>
     <h1>BTS - Butter</h1>
   </header>
-  <div class="content-wrapper">
-    <h2>🎵 Enjoy!</h2>
-    <div class="audio-container">
-      <audio controls>
-        <source src="butter.m4a" type="audio/mp4">
-        Your browser does not support the audio element.
-      </audio>
-    </div>
-    <div class="subcaption">
-      Part 2's out!
-    </div>
 
-    <!-- Like Button Section -->
-    <div class="like-button-container">
-      <button id="like-button" class="like-button" aria-label="Like this post">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="lucide lucide-heart">
-          <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
-        </svg>
-        Like
-      </button>
-      <span id="like-count" class="like-count">0</span>
-    </div>
-
-    <!-- Comments Section -->
-    <div class="comments-section">
-      <div id="userIdDisplay" style="text-align: right; font-size: 10px; color: #888;"></div>
-      <div class="comments-form">
-        <h3>Leave a comment</h3>
-        <form id="comments-form">
-          <input type="text" id="name" placeholder="Your Name" required maxlength="50"/>
-          <textarea id="comment" placeholder="Your Comment (max 500 characters)" maxlength="500" rows="4" required></textarea>
-          <button type="submit">Post Comment</button>
-        </form>
-      </div>
-
-      <div id="comments-list">
-        <!-- Comments will be dynamically inserted here -->
-      </div>
-    </div>
+  <h2>🎵 Enjoy!</h2>
+  <div class="audio-container">
+    <audio controls>
+      <source src="butter.m4a" type="audio/mp4">
+      Your browser does not support the audio element.
+    </audio>
   </div>
-  <!-- Custom Message Box -->
-  <div id="message-box" class="message-box">
-    <p id="message-text"></p>
-    <button>OK</button>
+
+  <div class="subcaption">Part 2's out!</div>
+
+  <!-- Like Button -->
+  <button id="likeBtn" class="like-button">Like 👍</button>
+
+  <!-- Comment Section -->
+  <div class="comment-section">
+    <h3>💬 Comments</h3>
+    <form class="comment-form" onsubmit="submitComment(event)">
+      <input type="text" id="nameInput" placeholder="Your name" required maxlength="50" />
+      <textarea id="commentInput" placeholder="Your comment" required maxlength="500"></textarea>
+      <button type="submit">Post Comment</button>
+    </form>
+    <div id="commentsContainer"></div>
   </div>
 </body>
 </html>
