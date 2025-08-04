@@ -34,19 +34,22 @@
       text-align: center;
     }
 
-    .video-container {
+    .audio-container {
       max-width: 90%;
       margin: 20px auto;
       border-radius: 15px;
       box-shadow: 0 0 30px #00ffe7;
       overflow: hidden;
+      background-color: #101820;
+      padding: 20px;
+      text-align: center;
     }
 
-    video {
+    audio {
       width: 100%;
-      height: auto;
-      display: block;
-      border-radius: 15px;
+      max-width: 500px;
+      border-radius: 10px;
+      background-color: #0d1117;
     }
 
     .subcaption {
@@ -247,17 +250,17 @@
     <h1>Blackpink – How You Like That</h1>
   </header>
 
-  <h2>💬 Scroll down to leave a comment after watching!</h2>
+  <h2>💬 Scroll down to leave a comment after listening!</h2>
 
-  <div class="video-container">
-    <video controls>
-      <source src="howyoulikethat.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
+  <div class="audio-container">
+    <audio controls>
+      <source src="howyoulikethat.m4a" type="audio/mp4">
+      Your browser does not support the audio element.
+    </audio>
   </div>
 
   <div class="like-container">
-    <button id="like-btn">❤️ Like this video</button>
+    <button id="like-btn">❤️ Like this song</button>
     <div id="like-count">👍 Likes: 0</div>
   </div>
 
