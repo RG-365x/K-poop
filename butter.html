@@ -239,7 +239,8 @@
     }
 
     function hideMessage() {
-      document.getElementById('message-box').style.display = 'none';
+      const messageBox = document.getElementById('message-box');
+      messageBox.style.display = 'none';
     }
 
     // Function to format Firestore timestamp
@@ -252,6 +253,13 @@
     }
 
     window.onload = async function() {
+      // Check if Firebase configuration is valid
+      if (!firebaseConfig.apiKey) {
+        showMessage("Firebase configuration not found. Please ensure the project is correctly set up.");
+        console.error("Firebase configuration is missing the API key.");
+        return;
+      }
+      
       // Initialize Firebase services
       try {
         app = initializeApp(firebaseConfig);
@@ -290,6 +298,10 @@
       const likeCountSpan = document.getElementById('like-count');
       const commentsForm = document.getElementById('comments-form');
       const commentsList = document.getElementById('comments-list');
+      const messageBoxButton = document.querySelector('#message-box button');
+
+      // Add event listener to the message box button
+      messageBoxButton.addEventListener('click', hideMessage);
 
       // Function to setup the listener for likes
       function setupLikesListener() {
@@ -474,7 +486,7 @@
   <!-- Custom Message Box -->
   <div id="message-box" class="message-box">
     <p id="message-text"></p>
-    <button onclick="hideMessage()">OK</button>
+    <button>OK</button>
   </div>
 </body>
 </html>
