@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Comments Mover</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .button-container {
+            text-align: center;
+            margin: 30px 0;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px 30px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            display: none;
+        }
+        .status.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .status.info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .preview {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .preview h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        .comment-item {
+            background: white;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 3px;
+            border-left: 3px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Firebase Comments Mover</h1>
+        
+        <div class="warning">
+            <strong>⚠️ Warning:</strong> This will move ALL data from the "comments" node to "Comments- How you like that" node and delete the original "comments" node. Make sure you have a backup!
+        </div>
+
+        <div class="button-container">
+            <button id="moveButton" onclick="moveComments()">
+                Move Comments to "Comments- How you like that"
+            </button>
+        </div>
+
+        <div id="status" class="status"></div>
+        
+        <div id="preview" class="preview" style="display: none;">
+            <h3>Preview of Comments to Move:</h3>
+            <div id="commentsPreview"></div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getDatabase, ref, get, set, remove } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-database.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
+            authDomain: "k-poop-comments.firebaseapp.com",
+            databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "k-poop-comments",
+            storageBucket: "k-poop-comments.firebasestorage.app",
+            messagingSenderId: "323112465515",
+            appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
+            measurementId: "G-5PLQLQG8DR"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
+
+        // Make functions available globally
+        window.moveComments = moveComments;
+        window.previewComments = previewComments;
+
+        // Preview comments before moving
+        async function previewComments() {
+            const statusDiv = document.getElementById('status');
+            const previewDiv = document.getElementById('preview');
+            const previewContent = document.getElementById('commentsPreview');
+            
+            try {
+                statusDiv.className = 'status info';
+                statusDiv.style.display = 'block';
+                statusDiv.textContent = 'Loading comments preview...';
+
+                const commentsRef = ref(database, 'comments');
+                const snapshot = await get(commentsRef);
+                
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const commentKeys = Object.keys(data);
+                    
+                    previewContent.innerHTML = '';
+                    commentKeys.forEach(key => {
+                        const commentDiv = document.createElement('div');
+                        commentDiv.className = 'comment-item';
+                        commentDiv.innerHTML = `<strong>${key}</strong><br><pre>${JSON.stringify(data[key], null, 2)}</pre>`;
+                        previewContent.appendChild(commentDiv);
+                    });
+                    
+                    previewDiv.style.display = 'block';
+                    statusDiv.textContent = `Found ${commentKeys.length} comments to move.`;
+                } else {
+                    statusDiv.className = 'status error';
+                    statusDiv.textContent = 'No comments found in the "comments" node.';
+                    previewDiv.style.display = 'none';
+                }
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.style.display = 'block';
+                statusDiv.textContent = `Error loading preview: ${error.message}`;
+                previewDiv.style.display = 'none';
+            }
+        }
+
+        // Move comments function
+        async function moveComments() {
+            const button = document.getElementById('moveButton');
+            const statusDiv = document.getElementById('status');
+            
+            // Confirm action
+            if (!confirm('Are you sure you want to move all comments? This action cannot be undone!')) {
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Moving Comments...';
+            statusDiv.style.display = 'block';
+            statusDiv.className = 'status info';
+            statusDiv.textContent = 'Starting to move comments...';
+
+            try {
+                // Get reference to the source comments
+                const commentsRef = ref(database, 'comments');
+                const snapshot = await get(commentsRef);
+                
+                if (!snapshot.exists()) {
+                    throw new Error('No data found in "comments" node');
+                }
+
+                const commentsData = snapshot.val();
+                statusDiv.textContent = `Found ${Object.keys(commentsData).length} comments. Moving to target location...`;
+                
+                // Get reference to target location
+                const targetRef = ref(database, 'Comments- How you like that');
+                
+                // Check if target already has data
+                const targetSnapshot = await get(targetRef);
+                if (targetSnapshot.exists()) {
+                    if (!confirm('Target location already has data. Continue anyway? This will merge the data.')) {
+                        throw new Error('Operation cancelled by user');
+                    }
+                }
+
+                // Move data to target location
+                await set(targetRef, commentsData);
+                statusDiv.textContent = 'Data copied to target location. Removing original data...';
+                
+                // Remove original data
+                await remove(commentsRef);
+                
+                // Success
+                statusDiv.className = 'status success';
+                statusDiv.textContent = `Successfully moved ${Object.keys(commentsData).length} comments from "comments" to "Comments- How you like that"!`;
+                
+            } catch (error) {
+                statusDiv.className = 'status error';
+                statusDiv.textContent = `Error: ${error.message}`;
+                console.error('Error moving comments:', error);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Move Comments to "Comments- How you like that"';
+            }
+        }
+
+        // Load preview on page load
+        window.addEventListener('load', previewComments);
+    </script>
+</body>
+</html>
