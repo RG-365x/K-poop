@@ -162,6 +162,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
     import {
       getDatabase,
       ref,
@@ -174,34 +175,42 @@
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const firebaseConfig = {
-      databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app/"
+      apiKey: "AIzaSyAOH9ijBM4UFAs8A9NR0Gu1qk_UrLtx8JM",
+      authDomain: "k-poop-comments.firebaseapp.com",
+      databaseURL: "https://k-poop-comments-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "k-poop-comments",
+      storageBucket: "k-poop-comments.firebasestorage.app",
+      messagingSenderId: "323112465515",
+      appId: "1:323112465515:web:199f7b435cf59389a2ed2e",
+      measurementId: "G-5PLQLQG8DR"
     };
 
     const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
     const db = getDatabase(app);
 
     // LIKE SYSTEM --------------------
     const likeBtn = document.getElementById("like-btn");
     const likeCount = document.getElementById("like-count");
-    const likeRef = ref(db, "likes/count");
+    const likeRef = ref(db, "Likes - How you like that/count");
 
     onValue(likeRef, (snapshot) => {
       const count = snapshot.val() || 0;
       likeCount.textContent = `👍 Likes: ${count}`;
     });
 
-    if (localStorage.getItem("liked") === "true") {
+    if (localStorage.getItem("liked-howyoulikethat") === "true") {
       likeBtn.textContent = "❤️ Liked";
       likeBtn.disabled = true;
     }
 
     likeBtn.addEventListener("click", async () => {
-      if (localStorage.getItem("liked") === "true") return;
+      if (localStorage.getItem("liked-howyoulikethat") === "true") return;
       try {
         const currentSnapshot = await get(likeRef);
         const current = currentSnapshot.val() || 0;
         await set(likeRef, current + 1);
-        localStorage.setItem("liked", "true");
+        localStorage.setItem("liked-howyoulikethat", "true");
         likeBtn.textContent = "❤️ Liked";
         likeBtn.disabled = true;
       } catch (error) {
@@ -212,7 +221,7 @@
     // COMMENTS SYSTEM ----------------
     const commentForm = document.getElementById("comment-form");
     const commentsDiv = document.getElementById("comments");
-    const commentsRef = ref(db, "comments");
+    const commentsRef = ref(db, "Comments- How you like that");
 
     onValue(commentsRef, (snapshot) => {
       commentsDiv.innerHTML = "";
